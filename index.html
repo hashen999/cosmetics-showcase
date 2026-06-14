@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Customizable luxury cosmetics showcase, storefront, and shopping cart catalog with PDF receipt invoice generator.">
+  <title>Aura Cosmetics | Premium Customizable Store</title>
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- html2pdf.js for generating PDF Receipts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+  <!-- HEADER / NAVIGATION -->
+  <header id="site-header">
+    <div class="header-container">
+      <a href="#" class="logo-link" id="logo-anchor">
+        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231e3a5f'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/></svg>" alt="Logo" class="logo-img" id="site-logo">
+        <span class="logo-text" id="site-name">AURA</span>
+      </a>
+
+      <nav id="desktop-nav">
+        <ul>
+          <li><a href="#" class="active" id="nav-home">Home</a></li>
+          <li><a href="#products-section" id="nav-shop">Shop</a></li>
+          <li><a href="#about-section" id="nav-about">Our Story</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn" id="cart-toggle-btn" aria-label="Open Cart">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="cart-badge" id="cart-count">0</span>
+        </button>
+        <button class="admin-toggle-btn" id="admin-panel-btn">
+          <i class="fa-solid fa-sliders"></i> Customize
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO CAROUSEL -->
+    <section class="hero-carousel" id="hero-section">
+      <div class="carousel-inner" id="hero-carousel-inner">
+        <!-- Dynamic Slides Rendered via JS -->
+      </div>
+      
+      <!-- Controls -->
+      <button class="carousel-control prev" id="carousel-prev" aria-label="Previous Slide">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <button class="carousel-control next" id="carousel-next" aria-label="Next Slide">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+
+      <!-- Indicators -->
+      <div class="carousel-indicators" id="carousel-indicators">
+        <!-- Dynamic Indicators Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- BRAND HIGHLIGHTS / FEATURES -->
+    <section class="section-padding" id="features-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle" id="features-subtitle">Pure & Mindful</span>
+          <h2 class="section-title" id="features-title">The Clean Beauty Standard</h2>
+        </div>
+        <div class="features-grid" id="features-container">
+          <!-- Dynamic Features Rendered via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCTS CATALOG -->
+    <section class="section-padding products-section" id="products-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle" id="products-subtitle">Curated Skincare</span>
+          <h2 class="section-title" id="products-title">Explore Our Bestsellers</h2>
+        </div>
+
+        <div class="filters-wrapper">
+          <div class="category-tabs" id="category-tabs-container">
+            <!-- Dynamic Category Tabs Rendered via JS -->
+          </div>
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="product-search" placeholder="Search skincare products...">
+          </div>
+        </div>
+
+        <div class="products-grid" id="products-container">
+          <!-- Dynamic Products Rendered via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- BRAND STORY / ABOUT -->
+    <section class="section-padding story-section" id="about-section">
+      <div class="container story-container">
+        <div class="story-content">
+          <span class="section-subtitle" id="about-subtitle">Behind The Brand</span>
+          <h2 class="story-title" id="about-title">Nourish Your Skin, <br><span>Embrace Your Natural Glow</span></h2>
+          <div class="story-text" id="about-text">
+            <!-- Dynamic About Text -->
+          </div>
+          <a href="#products-section" class="primary-btn">Shop The Collection</a>
+        </div>
+        <div class="story-image-wrapper">
+          <div class="story-image-container">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='450' viewBox='0 0 600 450' fill='%23c5a880'><rect width='600' height='450' fill='%23e9e3d9'/><path d='M300 120 C220 120 180 200 180 270 C180 320 220 350 300 350 C380 350 420 320 420 270 C420 200 380 120 300 120 Z' fill='%23d8cbb8'/></svg>" alt="Our Philosophy" id="about-image">
+          </div>
+          <div class="story-image-decor"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h3 id="footer-brand-name">AURA BEAUTY</h3>
+        <p id="footer-about-text">Premium cosmetics formulated to promote healthy, radiant, and resilient skin. 100% cruelty-free and dermatologist tested.</p>
+        <div class="social-links">
+          <a href="#" class="social-icon" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" class="social-icon" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" class="social-icon" aria-label="Pinterest"><i class="fa-brands fa-pinterest-p"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h3>Customer Support</h3>
+        <ul class="footer-links">
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">Shipping & Returns</a></li>
+          <li><a href="#">FAQ</a></li>
+          <li><a href="#">Skincare Guide</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h3>Contact Us</h3>
+        <p id="footer-contact-address"><i class="fa-solid fa-location-dot" style="margin-right: 8px;"></i> 100 Beauty Lane, Suite 200, New York, NY</p>
+        <p id="footer-contact-phone"><i class="fa-solid fa-phone" style="margin-right: 8px;"></i> +1 (800) 555-AURA</p>
+        <p id="footer-contact-email"><i class="fa-solid fa-envelope" style="margin-right: 8px;"></i> care@aurabeauty.com</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p id="footer-copyright">&copy; 2026 Aura Cosmetics. All rights reserved.</p>
+      <p>Made with Care for Clean Skincare</p>
+    </div>
+  </footer>
+
+  <!-- MOBILE BOTTOM ACTION BAR (iOS & Android Optimized) -->
+  <div class="mobile-action-bar" id="mobile-action-bar">
+    <button class="mobile-bar-btn" id="mobile-home-btn">
+      <i class="fa-solid fa-house"></i>
+      <span>Home</span>
+    </button>
+    <button class="mobile-bar-btn" id="mobile-customize-btn">
+      <i class="fa-solid fa-sliders"></i>
+      <span>Customize</span>
+    </button>
+    <button class="mobile-bar-btn" id="mobile-cart-btn">
+      <div style="position: relative; display: inline-block;">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span class="mobile-cart-badge" id="mobile-cart-count">0</span>
+      </div>
+      <span>Cart</span>
+    </button>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- SHOPPING CART DRAWER (RIGHT) -->
+  <div class="drawer-backdrop" id="cart-drawer-backdrop"></div>
+  <div class="drawer drawer-right" id="cart-drawer">
+    <div class="drawer-header">
+      <h2>Your Cart</h2>
+      <button class="close-btn" id="cart-close-btn" aria-label="Close Cart">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="cart-body" id="cart-items-container">
+      <!-- Dynamic Cart Items Rendered via JS -->
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span>Total:</span>
+        <span id="cart-total-amount">$0.00</span>
+      </div>
+      <button class="checkout-btn" id="cart-checkout-btn">Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <!-- ADMIN CUSTOMIZER DRAWER (LEFT) -->
+  <div class="drawer-backdrop" id="admin-drawer-backdrop"></div>
+  <div class="drawer drawer-left admin-drawer" id="admin-drawer">
+    <div class="drawer-header">
+      <h2>Website Customizer</h2>
+      <button class="close-btn" id="admin-close-btn" aria-label="Close Customizer">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    
+    <!-- Admin Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab-btn active" data-tab="admin-general">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>General</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="admin-theme">
+        <i class="fa-solid fa-palette"></i>
+        <span>Theme</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="admin-slides">
+        <i class="fa-solid fa-images"></i>
+        <span>Slides</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="admin-features">
+        <i class="fa-solid fa-star"></i>
+        <span>Features</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="admin-products">
+        <i class="fa-solid fa-tags"></i>
+        <span>Catalog</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="admin-data">
+        <i class="fa-solid fa-database"></i>
+        <span>Data</span>
+      </button>
+    </div>
+
+    <!-- Admin Body -->
+    <div class="admin-body">
+      
+      <!-- TAB 1: GENERAL INFO -->
+      <div class="admin-panel-content active" id="admin-general">
+        <div class="form-group">
+          <label for="input-store-name">Store Name</label>
+          <input type="text" id="input-store-name" placeholder="Enter store name">
+        </div>
+        
+        <div class="form-group">
+          <label>Store Logo</label>
+          <label class="file-upload-label" for="input-logo-file">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Upload custom logo image (PNG/SVG)</span>
+            <input type="file" id="input-logo-file" accept="image/*" style="display: none;">
+          </label>
+          <img src="" alt="Logo Preview" class="file-upload-preview" id="logo-preview">
+        </div>
+
+        <div class="custom-form-title">About Us Section</div>
+        <div class="form-group">
+          <label for="input-about-subtitle">About Subtitle</label>
+          <input type="text" id="input-about-subtitle">
+        </div>
+        <div class="form-group">
+          <label for="input-about-title">About Title</label>
+          <input type="text" id="input-about-title">
+        </div>
+        <div class="form-group">
+          <label for="input-about-text">About Description</label>
+          <textarea id="input-about-text" placeholder="Enter brand philosophy..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>About Image</label>
+          <label class="file-upload-label" for="input-about-file">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Upload Story Image</span>
+            <input type="file" id="input-about-file" accept="image/*" style="display: none;">
+          </label>
+          <img src="" alt="About Image Preview" class="file-upload-preview" id="about-image-preview">
+        </div>
+
+        <div class="custom-form-title">Footer Info</div>
+        <div class="form-group">
+          <label for="input-footer-about">Footer Brand Description</label>
+          <textarea id="input-footer-about"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="input-footer-address">Contact Address</label>
+          <input type="text" id="input-footer-address">
+        </div>
+        <div class="form-group">
+          <label for="input-footer-phone">Contact Phone</label>
+          <input type="text" id="input-footer-phone">
+        </div>
+        <div class="form-group">
+          <label for="input-footer-email">Contact Email</label>
+          <input type="text" id="input-footer-email">
+        </div>
+        <button class="primary-btn" id="btn-save-general" style="width: 100%; margin-top: 1rem;">Save Changes</button>
+      </div>
+
+      <!-- TAB 2: COLOR THEME -->
+      <div class="admin-panel-content" id="admin-theme">
+        <div class="form-group">
+          <label>Brand Colors</label>
+          
+          <div class="color-picker-wrapper">
+            <div class="color-input-container">
+              <input type="color" id="input-color-primary">
+            </div>
+            <div>
+              <strong>Primary Color</strong>
+              <div style="font-size:0.8rem; color:#666;">Used for main buttons, header borders, grid titles, and solid branding accents.</div>
+            </div>
+          </div>
+
+          <div class="color-picker-wrapper">
+            <div class="color-input-container">
+              <input type="color" id="input-color-accent">
+            </div>
+            <div>
+              <strong>Accent Color</strong>
+              <div style="font-size:0.8rem; color:#666;">Used for champagne golds/pinks, highlights, badges, and carousel CTA buttons.</div>
+            </div>
+          </div>
+
+          <div class="color-picker-wrapper">
+            <div class="color-input-container">
+              <input type="color" id="input-color-bg">
+            </div>
+            <div>
+              <strong>Site Background</strong>
+              <div style="font-size:0.8rem; color:#666;">Secondary sections and full body background color. Usually soft pastel or off-white.</div>
+            </div>
+          </div>
+
+          <div class="color-picker-wrapper">
+            <div class="color-input-container">
+              <input type="color" id="input-color-text">
+            </div>
+            <div>
+              <strong>Main Text Color</strong>
+              <div style="font-size:0.8rem; color:#666;">Primary body paragraphs and secondary details color. Must contrast with the background.</div>
+            </div>
+          </div>
+        </div>
+        <button class="primary-btn" id="btn-save-theme" style="width: 100%; margin-top: 1.5rem;">Apply Theme</button>
+      </div>
+
+      <!-- TAB 3: CAROUSEL SLIDES -->
+      <div class="admin-panel-content" id="admin-slides">
+        <div class="admin-item-list" id="admin-slides-list">
+          <!-- Dynamic Slide Cards for Admin -->
+        </div>
+
+        <div class="custom-form-title" id="slide-form-title">Create New Slide</div>
+        <form id="slide-form">
+          <input type="hidden" id="slide-edit-id">
+          <div class="form-group">
+            <label for="input-slide-subtitle">Subtitle / Campaign Label</label>
+            <input type="text" id="input-slide-subtitle" placeholder="e.g. SUMMER ESSENTIALS">
+          </div>
+          <div class="form-group">
+            <label for="input-slide-title">Slide Title</label>
+            <input type="text" id="input-slide-title" placeholder="e.g. Nourishing Mineral Protection">
+          </div>
+          <div class="form-group">
+            <label for="input-slide-desc">Slide Description</label>
+            <textarea id="input-slide-desc" placeholder="Brief tagline or benefit statement..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="input-slide-cta">CTA Button Text</label>
+            <input type="text" id="input-slide-cta" placeholder="e.g. SHOP NOW">
+          </div>
+          <div class="form-group">
+            <label>Slide Image</label>
+            <label class="file-upload-label" for="input-slide-file">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload background image</span>
+              <input type="file" id="input-slide-file" accept="image/*" style="display: none;">
+            </label>
+            <img src="" alt="Slide Image Preview" class="file-upload-preview" id="slide-image-preview">
+          </div>
+          <div class="form-row">
+            <button type="submit" class="primary-btn" id="btn-slide-submit">Add Slide</button>
+            <button type="button" class="secondary-btn" id="btn-slide-cancel" style="display: none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB 4: BRAND FEATURES -->
+      <div class="admin-panel-content" id="admin-features">
+        <div class="admin-item-list" id="admin-features-list">
+          <!-- Dynamic Features List for Admin -->
+        </div>
+
+        <div class="custom-form-title" id="feature-form-title">Create Feature Accent</div>
+        <form id="feature-form">
+          <input type="hidden" id="feature-edit-id">
+          <div class="form-group">
+            <label for="input-feature-title">Feature Title</label>
+            <input type="text" id="input-feature-title" placeholder="e.g. 100% Organic Ingredients">
+          </div>
+          <div class="form-group">
+            <label for="input-feature-desc">Description</label>
+            <textarea id="input-feature-desc" placeholder="Keep it clean and brief..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="input-feature-icon">FontAwesome Icon Class</label>
+            <select id="input-feature-icon">
+              <option value="fa-leaf">Leaf (Organic)</option>
+              <option value="fa-heart">Heart (Cruelty Free)</option>
+              <option value="fa-shield-halved">Shield (Dermatologist Tested)</option>
+              <option value="fa-droplet">Droplet (Hydration)</option>
+              <option value="fa-sparkles">Sparkles (Glow)</option>
+              <option value="fa-sun">Sun (Sun Protection)</option>
+              <option value="fa-flask">Flask (Clinically Proven)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <button type="submit" class="primary-btn" id="btn-feature-submit">Add Feature</button>
+            <button type="button" class="secondary-btn" id="btn-feature-cancel" style="display: none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB 5: PRODUCT CATALOG (Stocks & Customization Integrated) -->
+      <div class="admin-panel-content" id="admin-products">
+        <div class="admin-item-list" id="admin-products-list">
+          <!-- Dynamic Product Entries for Admin -->
+        </div>
+
+        <div class="custom-form-title" id="product-form-title">Add Product to Catalog</div>
+        <form id="product-form">
+          <input type="hidden" id="product-edit-id">
+          <div class="form-group">
+            <label for="input-product-name">Product Name</label>
+            <input type="text" id="input-product-name" required placeholder="e.g. Hydrating Face Wash">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="input-product-price">Price ($)</label>
+              <input type="number" step="0.01" id="input-product-price" required placeholder="e.g. 18.99">
+            </div>
+            <div class="form-group">
+              <label for="input-product-stock">Available Stock</label>
+              <input type="number" id="input-product-stock" required min="0" placeholder="e.g. 15">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="input-product-category">Category</label>
+            <input type="text" id="input-product-category" required placeholder="e.g. Cleansers">
+          </div>
+          <div class="form-group">
+            <label for="input-product-desc">Short Description</label>
+            <textarea id="input-product-desc" required placeholder="Short outline of the skin benefits..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Product Image</label>
+            <label class="file-upload-label" for="input-product-file">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload product thumbnail image</span>
+              <input type="file" id="input-product-file" accept="image/*" style="display: none;">
+            </label>
+            <img src="" alt="Product Image Preview" class="file-upload-preview" id="product-image-preview">
+          </div>
+          <div class="form-row">
+            <button type="submit" class="primary-btn" id="btn-product-submit">Add Product</button>
+            <button type="button" class="secondary-btn" id="btn-product-cancel" style="display: none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB 6: CONFIG DATA TRANSFER -->
+      <div class="admin-panel-content" id="admin-data">
+        <p style="font-size:0.9rem; color:#666; margin-bottom: 1.5rem;">
+          You can completely backup, restore, share, or reset your current website modifications. Download your custom configuration as a JSON file, or restore a previous template file.
+        </p>
+        
+        <div class="form-group">
+          <button class="primary-btn" id="btn-export-config" style="width: 100%;">
+            <i class="fa-solid fa-download"></i> Export Configuration (JSON)
+          </button>
+        </div>
+
+        <div class="form-group" style="margin-top: 1.5rem;">
+          <label>Import Configuration</label>
+          <label class="file-upload-label" for="input-import-file">
+            <i class="fa-solid fa-file-import"></i>
+            <span>Select configuration JSON file</span>
+            <input type="file" id="input-import-file" accept=".json" style="display: none;">
+          </label>
+        </div>
+
+        <div class="form-group" style="margin-top: 2.5rem; border-top: 1px solid var(--color-border); padding-top: 2rem;">
+          <button class="secondary-btn" id="btn-reset-defaults" style="width: 100%; border-color: #cc5a5a; color: #cc5a5a;">
+            <i class="fa-solid fa-trash-can"></i> Reset Site to Defaults
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CHECKOUT / FORM INPUT MODAL -->
+  <div class="modal-backdrop" id="checkout-modal-backdrop"></div>
+  <div class="modal" id="checkout-modal">
+    <div class="modal-header">
+      <h2>Complete Checkout</h2>
+      <button class="close-btn" id="checkout-close-btn" aria-label="Close Checkout">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="checkout-form">
+        <p style="font-size:0.9rem; color:#666; margin-bottom:1.5rem;">
+          Provide your details to review your checkout details and generate your premium PDF invoice.
+        </p>
+
+        <div class="form-group">
+          <label for="customer-name">Full Name</label>
+          <input type="text" id="customer-name" required placeholder="Jane Doe">
+        </div>
+
+        <div class="form-group">
+          <label for="customer-phone">Phone Number</label>
+          <input type="tel" id="customer-phone" required placeholder="+1 (555) 019-2834">
+        </div>
+
+        <div class="form-group">
+          <label for="customer-address">Shipping Address</label>
+          <textarea id="customer-address" required placeholder="123 Serene Valley Ave, Apt 4B, Floral Hills, CA 90210"></textarea>
+        </div>
+
+        <div style="border-top: 1px solid var(--color-border); padding-top: 1.5rem; margin-top: 1.5rem; display: flex; gap: 1rem;">
+          <button type="submit" class="primary-btn" style="flex-grow: 1;">
+            <i class="fa-solid fa-eye"></i> Preview Receipt
+          </button>
+          <button type="button" class="secondary-btn" id="checkout-cancel-btn">Back to Cart</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- RECEIPT PREVIEW MODAL (VISIBLE TO FIX BLANK PDF CAPTURE ISSUES) -->
+  <div class="modal-backdrop" id="receipt-modal-backdrop"></div>
+  <div class="modal" id="receipt-modal" style="max-width: 800px;">
+    <div class="modal-header">
+      <h2>Receipt Preview</h2>
+      <button class="close-btn" id="receipt-close-btn" aria-label="Close Preview">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 0; background-color: #f7f7f7;">
+      <!-- Invoice Canvas Container -->
+      <div id="receipt-pdf-container">
+        <div class="receipt-header">
+          <div class="receipt-logo-info">
+            <img src="" alt="Receipt Logo" id="receipt-logo">
+            <span class="receipt-store-name" id="receipt-store-name">AURA BEAUTY</span>
+          </div>
+          <div class="receipt-meta">
+            <h1>Receipt</h1>
+            <p>Receipt #: <strong id="receipt-number">INV-10924</strong></p>
+            <p>Date: <span id="receipt-date">June 2, 2026</span></p>
+          </div>
+        </div>
+
+        <div class="receipt-details-grid">
+          <div class="receipt-info-block">
+            <h3>Customer Details</h3>
+            <p><strong>Name:</strong> <span id="receipt-cust-name">John Doe</span></p>
+            <p><strong>Phone:</strong> <span id="receipt-cust-phone">+1 (555) 123-4567</span></p>
+            <p><strong>Address:</strong> <span id="receipt-cust-address">456 Main St, City, Country</span></p>
+          </div>
+          <div class="receipt-info-block" style="text-align: right;">
+            <h3>Payment Status</h3>
+            <p style="font-size: 1.1rem; color: var(--color-success); font-weight: 600; margin-top: 0.5rem;">
+              <i class="fa-solid fa-circle-check"></i> PAID VIA RECEIPT
+            </p>
+            <p style="font-size: 0.8rem; color:#888;">Thank you for shopping with us!</p>
+          </div>
+        </div>
+
+        <table class="receipt-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th class="num">Unit Price</th>
+              <th class="num">Qty</th>
+              <th class="num">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="receipt-items-body">
+            <!-- Dynamic Items inserted here -->
+          </tbody>
+        </table>
+
+        <div class="receipt-summary">
+          <table class="receipt-summary-table">
+            <tr>
+              <td>Items Subtotal:</td>
+              <td class="num" id="receipt-subtotal">$0.00</td>
+            </tr>
+            <tr>
+              <td>Shipping & Handling:</td>
+              <td class="num" id="receipt-shipping">FREE</td>
+            </tr>
+            <tr class="grand-total">
+              <td>Total Paid:</td>
+              <td class="num" id="receipt-total">$0.00</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="receipt-footer">
+          <p>If you have any questions about this receipt, please contact <strong id="receipt-footer-email">care@aurabeauty.com</strong></p>
+          <p style="margin-top: 0.8rem; font-style: italic;">Powered by Aura Custom Showcase Platforms</p>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 1.5rem 2rem; border-top: 1px solid var(--color-border); display: flex; gap: 1rem; background-color: #fcfcfc;">
+      <button class="primary-btn" id="btn-download-pdf" style="flex-grow: 1;">
+        <i class="fa-solid fa-download"></i> Download PDF Receipt
+      </button>
+      <button class="secondary-btn" id="btn-close-receipt-preview" style="flex-grow: 1;">Close & Clear Cart</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
