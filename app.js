@@ -1,5 +1,5 @@
 /**
- * Aura Cosmetics - Core Storefront Application Logic (Stocks & Preview Updated)
+ * Aura Cosmetics - Core Storefront Application Logic (Auth & Config Fetch Updated)
  */
 
 // Helper to generate elegant cosmetics SVGs styled dynamically with theme colors
@@ -245,7 +245,7 @@ const DEFAULT_CONFIG = {
       desc: "Broad-spectrum physical SPF 50 sunscreen containing micro-fine zinc oxide. Controls shine, leaving a velvet matte finish with zero white cast.",
       imageUrl: "",
       imageType: "sunscreen",
-      stock: 0 // Out of Stock preset to demonstrate lock behavior instantly
+      stock: 0
     },
     {
       id: "prod-5",
@@ -268,7 +268,8 @@ const state = {
   cart: JSON.parse(localStorage.getItem('aura_store_cart')) || [],
   activeSlideIndex: 0,
   categoryFilter: 'All',
-  searchQuery: ''
+  searchQuery: '',
+  isLoggedIn: sessionStorage.getItem('aura_admin_logged_in') === 'true'
 };
 
 // Temp checkout variables to hold info until receipt is finalized
@@ -487,6 +488,33 @@ function renderFeatures() {
     `;
     container.appendChild(card);
   });
+}
+
+// Check login state and toggle buttons
+function updateLoginUI() {
+  const loginBtn = document.getElementById('admin-login-btn');
+  const panelBtn = document.getElementById('admin-panel-btn');
+  const logoutBtn = document.getElementById('admin-logout-btn');
+  const mobileCustomizeBtn = document.getElementById('mobile-customize-btn');
+  
+  if (state.isLoggedIn) {
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (panelBtn) panelBtn.style.display = 'inline-flex';
+    if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+    
+    // Update mobile customize button
+    if (mobileCustomizeBtn) {
+      mobileCustomizeBtn.innerHTML = `<i class="fa-solid fa-sliders"></i><span>Customize</span>`;
+    }
+  } else {
+    if (loginBtn) loginBtn.style.display = 'inline-flex';
+    if (panelBtn) panelBtn.style.display = 'none';
+    if (logoutBtn) logoutBtn.style.display = 'none';
+    
+    if (mobileCustomizeBtn) {
+      mobileCustomizeBtn.innerHTML = `<i class="fa-solid fa-lock"></i><span>Login</span>`;
+    }
+  }
 }
 
 function renderAboutSection() {
@@ -911,7 +939,7 @@ function finalizeCheckout() {
     }
   });
   
-  // Save settings
+  // Save settings (only saves locally for active customer's simulation)
   saveConfig();
   
   // Clear cart
@@ -934,8 +962,68 @@ document.getElementById('btn-close-receipt-preview').addEventListener('click', (
 });
 
 // -------------------------------------------------------------
+// DYNAMIC FILE-BASED CONFIG LOADER (OPTION 1 IMPLEMENTATION)
+// -------------------------------------------------------------
+function validateConfig(cfg) {
+  return !!(cfg && 
+         cfg.storeName && 
+         cfg.colors && 
+         cfg.colors.primary && 
+         cfg.colors.accent && 
+         cfg.colors.bg && 
+         cfg.colors.text && 
+         Array.isArray(cfg.products) && 
+         Array.isArray(cfg.slides) && 
+         Array.isArray(cfg.features) && 
+         cfg.about && 
+         cfg.footer);
+}
+
+async function loadInitialConfig() {
+  try {
+    const response = await fetch('config.json');
+    if (response.ok) {
+      const remoteConfig = await response.json();
+      if (validateConfig(remoteConfig)) {
+        state.config = remoteConfig;
+        console.log("Successfully loaded configurations from remote config.json file.");
+      } else {
+        console.warn("Remote config.json was invalid. Defaulting to local storage settings.");
+        loadLocalStorageConfig();
+      }
+    } else {
+      console.log("config.json not found on server. Defaulting to local storage settings.");
+      loadLocalStorageConfig();
+    }
+  } catch (err) {
+    console.warn("Failed to fetch config.json. Defaulting to local storage settings.", err);
+    loadLocalStorageConfig();
+  }
+  
+  // Initialize user login states and render site
+  updateLoginUI();
+  renderStorefront();
+}
+
+function loadLocalStorageConfig() {
+  try {
+    const local = localStorage.getItem('aura_store_config');
+    if (local) {
+      const parsed = JSON.parse(local);
+      if (validateConfig(parsed)) {
+        state.config = parsed;
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to parse local config:", err);
+  }
+  state.config = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+}
+
+// -------------------------------------------------------------
 // INITIAL APPLICATION START
 // -------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
-  renderStorefront();
+  loadInitialConfig();
 });

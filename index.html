@@ -13,6 +13,27 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
+  <!-- Visually overlay browser console errors for rapid diagnostics -->
+  <div id="debug-error-console" style="display: none; position: fixed; top: 15px; right: 15px; background-color: #fee2e2; color: #991b1b; border: 2px solid #f87171; padding: 18px; border-radius: 8px; z-index: 999999; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); font-family: monospace; font-size: 12px; white-space: pre-wrap;">
+    <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #fca5a5; padding-bottom: 5px;">
+      <span>⚠️ Javascript Error Detected</span>
+      <button onclick="this.parentElement.parentElement.style.display='none'" style="cursor: pointer; background: none; border: none; font-weight: bold; color: inherit; font-size: 16px; line-height: 1;">&times;</button>
+    </div>
+    <div id="debug-error-message"></div>
+    <div style="margin-top: 10px; font-size: 10px; color: #7f1d1d; border-top: 1px dashed #fca5a5; padding-top: 5px;">Try hard-refreshing (Ctrl+F5) to clear browser cache.</div>
+  </div>
+  <script>
+    window.addEventListener('error', function(e) {
+      document.getElementById('debug-error-console').style.display = 'block';
+      var msg = e.message + '\nSource: ' + (e.filename || 'unknown').split('/').pop() + ':' + e.lineno + ':' + e.colno;
+      document.getElementById('debug-error-message').textContent = msg;
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      document.getElementById('debug-error-console').style.display = 'block';
+      var msg = 'Promise Rejection: ' + e.reason;
+      document.getElementById('debug-error-message').textContent = msg;
+    });
+  </script>
 
   <!-- HEADER / NAVIGATION -->
   <header id="site-header">
@@ -35,8 +56,14 @@
           <i class="fa-solid fa-bag-shopping"></i>
           <span class="cart-badge" id="cart-count">0</span>
         </button>
-        <button class="admin-toggle-btn" id="admin-panel-btn">
+        <button class="admin-toggle-btn" id="admin-login-btn">
+          <i class="fa-solid fa-lock"></i> Login
+        </button>
+        <button class="admin-toggle-btn" id="admin-panel-btn" style="display: none;">
           <i class="fa-solid fa-sliders"></i> Customize
+        </button>
+        <button class="icon-btn" id="admin-logout-btn" style="display: none;" title="Log Out">
+          <i class="fa-solid fa-right-from-bracket"></i>
         </button>
       </div>
     </div>
@@ -162,8 +189,8 @@
       <span>Home</span>
     </button>
     <button class="mobile-bar-btn" id="mobile-customize-btn">
-      <i class="fa-solid fa-sliders"></i>
-      <span>Customize</span>
+      <i class="fa-solid fa-lock"></i>
+      <span id="mobile-customize-label">Login</span>
     </button>
     <button class="mobile-bar-btn" id="mobile-cart-btn">
       <div style="position: relative; display: inline-block;">
@@ -502,6 +529,33 @@
     </div>
   </div>
 
+  <!-- ADMIN LOGIN MODAL -->
+  <div class="modal-backdrop" id="login-modal-backdrop"></div>
+  <div class="modal" id="login-modal" style="max-width: 400px;">
+    <div class="modal-header">
+      <h2>Admin Login</h2>
+      <button class="close-btn" id="login-close-btn" aria-label="Close Login">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="login-form">
+        <p style="font-size:0.9rem; color:#666; margin-bottom:1.5rem;">
+          Sign in using your administrator credentials to access the customization panel.
+        </p>
+        <div class="form-group">
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" required placeholder="admin">
+        </div>
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="primary-btn" style="width: 100%;">Log In</button>
+      </form>
+    </div>
+  </div>
+
   <!-- CHECKOUT / FORM INPUT MODAL -->
   <div class="modal-backdrop" id="checkout-modal-backdrop"></div>
   <div class="modal" id="checkout-modal">
@@ -613,6 +667,10 @@
           </table>
         </div>
 
+        <div class="receipt-summary-table" style="display:none;">
+          <!-- Extra print bindings mapping details -->
+        </div>
+
         <div class="receipt-footer">
           <p>If you have any questions about this receipt, please contact <strong id="receipt-footer-email">care@aurabeauty.com</strong></p>
           <p style="margin-top: 0.8rem; font-style: italic;">Powered by Aura Custom Showcase Platforms</p>
@@ -628,7 +686,7 @@
   </div>
 
   <!-- Scripts -->
-  <script src="app.js"></script>
-  <script src="admin.js"></script>
+  <script src="app.js?v=1.0.3"></script>
+  <script src="admin.js?v=1.0.3"></script>
 </body>
 </html>

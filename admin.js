@@ -1,17 +1,23 @@
 /**
- * Aura Cosmetics - Admin Customizer Sidebar Logic (Stocks & Mobile Integrated)
+ * Aura Cosmetics - Admin Customizer Sidebar Logic (Auth & Config Fetch Updated)
  */
 
 // -------------------------------------------------------------
-// DRAWER TOGGLES & INTERFACE BINDINGS
+// DRAWER & MODAL TOGGLES & INTERFACE BINDINGS
 // -------------------------------------------------------------
 const adminDrawer = document.getElementById('admin-drawer');
 const adminBackdrop = document.getElementById('admin-drawer-backdrop');
 
+const loginModal = document.getElementById('login-modal');
+const loginBackdrop = document.getElementById('login-modal-backdrop');
+
 function openAdminPanel() {
+  if (!state.isLoggedIn) {
+    openLoginModal();
+    return;
+  }
   adminDrawer.classList.add('open');
   adminBackdrop.classList.add('open');
-  // Load form values with current state
   populateAdminForms();
 }
 
@@ -20,17 +26,81 @@ function closeAdminPanel() {
   adminBackdrop.classList.remove('open');
 }
 
+function openLoginModal() {
+  loginModal.classList.add('open');
+  loginBackdrop.classList.add('open');
+}
+
+function closeLoginModal() {
+  loginModal.classList.remove('open');
+  loginBackdrop.classList.remove('open');
+  document.getElementById('login-form').reset();
+}
+
+// Bind Header panel button
 document.getElementById('admin-panel-btn').addEventListener('click', openAdminPanel);
 document.getElementById('admin-close-btn').addEventListener('click', closeAdminPanel);
 adminBackdrop.addEventListener('click', closeAdminPanel);
 
+// Bind Login buttons
+document.getElementById('admin-login-btn').addEventListener('click', openLoginModal);
+document.getElementById('login-close-btn').addEventListener('click', closeLoginModal);
+loginBackdrop.addEventListener('click', closeLoginModal);
+
 // Bind Mobile bottom action bar triggers
-document.getElementById('mobile-customize-btn').addEventListener('click', openAdminPanel);
+document.getElementById('mobile-customize-btn').addEventListener('click', (e) => {
+  e.preventDefault();
+  if (state.isLoggedIn) {
+    openAdminPanel();
+  } else {
+    openLoginModal();
+  }
+});
+
 document.getElementById('mobile-home-btn').addEventListener('click', (e) => {
   e.preventDefault();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   closeAdminPanel();
   closeCart();
+  closeLoginModal();
+});
+
+// -------------------------------------------------------------
+// ADMIN LOGIN & LOGOUT OPERATIONS
+// -------------------------------------------------------------
+document.getElementById('login-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  
+  const user = document.getElementById('login-username').value.trim();
+  const pass = document.getElementById('login-password').value;
+  
+  // Verify credentials
+  if (user === 'admin' && pass === 'maldcos123') {
+    state.isLoggedIn = true;
+    sessionStorage.setItem('aura_admin_logged_in', 'true');
+    
+    // Close modal & update header indicators
+    closeLoginModal();
+    updateLoginUI();
+    
+    showToast("Logged in as administrator!", "fa-circle-check");
+  } else {
+    showToast("Invalid admin credentials!", "fa-circle-exclamation");
+  }
+});
+
+document.getElementById('admin-logout-btn').addEventListener('click', () => {
+  state.isLoggedIn = false;
+  sessionStorage.removeItem('aura_admin_logged_in');
+  
+  // Close customizer drawer and login modal if open
+  closeAdminPanel();
+  closeLoginModal();
+  
+  // Update header indicators
+  updateLoginUI();
+  
+  showToast("Logged out successfully.", "fa-right-from-bracket");
 });
 
 // Tab switching
@@ -586,7 +656,7 @@ document.getElementById('btn-export-config').addEventListener('click', () => {
   
   const formattedStore = state.config.storeName.toLowerCase().replace(/[^a-z0-9]/g, '_');
   dlAnchor.setAttribute("href",     dataStr);
-  dlAnchor.setAttribute("download", `aura_showcase_config_${formattedStore}.json`);
+  dlAnchor.setAttribute("download", `config.json`); // Export as config.json by default to make Option 1 seamless!
   document.body.appendChild(dlAnchor);
   dlAnchor.click();
   dlAnchor.remove();
@@ -604,8 +674,8 @@ document.getElementById('input-import-file').addEventListener('change', (e) => {
     try {
       const parsedConfig = JSON.parse(event.target.result);
       
-      // Simple structure validation
-      if (!parsedConfig.storeName || !parsedConfig.colors || !Array.isArray(parsedConfig.products)) {
+      // Robust configuration structure validation
+      if (typeof validateConfig === "function" && !validateConfig(parsedConfig)) {
         showToast("Invalid template configuration file format.", "fa-circle-exclamation");
         return;
       }

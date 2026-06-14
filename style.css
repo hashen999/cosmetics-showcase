@@ -1837,3 +1837,14 @@ footer {
     width: 100%;
   }
 }
+
+/* Admin Logout Button */
+#admin-logout-btn {
+  background-color: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
+}
+#admin-logout-btn:hover {
+  background-color: #dc2626;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
