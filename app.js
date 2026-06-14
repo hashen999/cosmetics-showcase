@@ -141,7 +141,9 @@ function getPlaceholderSvg(type, primaryColor, accentColor) {
       break;
   }
   
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svgContent.trim());
+  // Base64 encode the SVG content to resolve html2canvas drawing failures in PDF generator
+  const base64Svg = btoa(unescape(encodeURIComponent(svgContent.trim())));
+  return 'data:image/svg+xml;base64,' + base64Svg;
 }
 
 // -------------------------------------------------------------
@@ -965,41 +967,108 @@ function populateReceiptModal(name, phone, address) {
 }
 
 function executePdfDownload(receiptNum) {
-  // Capture the fully visible receipt container inside the preview modal
-  const element = document.getElementById('receipt-pdf-container');
+  const original = document.getElementById('receipt-pdf-container');
+  const modal = document.getElementById('receipt-modal');
+  if (!original || !modal) {
+    showToast("Receipt container not found!", "fa-circle-exclamation");
+    return;
+  }
+  
+  // Save original modal inline styling
+  const originalTransition = modal.style.transition;
+  const originalTransform = modal.style.transform;
+  const originalTop = modal.style.top;
+  const originalLeft = modal.style.left;
+  
+  // Capture current screen dimensions of the modal
+  const width = modal.offsetWidth;
+  const height = modal.offsetHeight;
+  
+  // Temporarily disable transform and place the modal in the exact same coordinates manually
+  modal.style.transition = 'none';
+  modal.style.transform = 'none';
+  modal.style.top = `calc(50% - ${height / 2}px)`;
+  modal.style.left = `calc(50% - ${width / 2}px)`;
   
   const opt = {
     margin:       [10, 10, 10, 10],
     filename:     `receipt_${receiptNum}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+    html2canvas:  { scale: 2, useCORS: true, letterRendering: true, logging: false },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   
   showToast("Downloading invoice...", "fa-arrows-spin");
   
-  html2pdf().set(opt).from(element).save().then(() => {
-    showToast("PDF downloaded! Checkout finalized.", "fa-circle-check");
-    finalizeCheckout();
-  }).catch((err) => {
-    console.error("PDF download error: ", err);
-    showToast("Failed to compile PDF.", "fa-circle-exclamation");
-  });
+  // Wait 250ms for browser to repaint without transform before generating PDF
+  setTimeout(() => {
+    html2pdf().set(opt).from(original).save().then(() => {
+      // Restore original modal styling
+      modal.style.transition = originalTransition;
+      modal.style.transform = originalTransform;
+      modal.style.top = originalTop;
+      modal.style.left = originalLeft;
+      
+      showToast("PDF downloaded! Checkout finalized.", "fa-circle-check");
+      finalizeCheckout();
+    }).catch((err) => {
+      // Restore original modal styling on error
+      modal.style.transition = originalTransition;
+      modal.style.transform = originalTransform;
+      modal.style.top = originalTop;
+      modal.style.left = originalLeft;
+      
+      console.error("PDF download error: ", err);
+      showToast("Failed to compile PDF.", "fa-circle-exclamation");
+    });
+  }, 250);
 }
 
 // Finalizes purchase, subtracts stocks from database, clears forms
-function finalizeCheckout() {
-  // Subtract stocks
-  state.cart.forEach(item => {
-    const prod = state.config.products.find(p => p.id === item.productId);
-    if (prod) {
-      const currentStock = prod.stock !== undefined ? prod.stock : 10;
-      prod.stock = Math.max(0, currentStock - item.qty);
+async function finalizeCheckout() {
+  // If database is connected, fetch the latest config first to prevent race conditions on stocks
+  if (supabaseClient) {
+    try {
+      console.log("Syncing checkout stock reductions with Supabase...");
+      const { data, error } = await supabaseClient
+        .from('storefront_settings')
+        .select('value')
+        .eq('id', 'aura_config')
+        .maybeSingle();
+        
+      if (!error && data && data.value) {
+        const dbConfig = data.value;
+        
+        // Subtract stocks on the fresh database configuration
+        state.cart.forEach(item => {
+          const prod = dbConfig.products.find(p => p.id === item.productId);
+          if (prod) {
+            const currentStock = prod.stock !== undefined ? prod.stock : 10;
+            prod.stock = Math.max(0, currentStock - item.qty);
+          }
+          // Also sync local state product stock level so UI updates
+          const localProd = state.config.products.find(p => p.id === item.productId);
+          if (localProd) {
+            localProd.stock = Math.max(0, (localProd.stock !== undefined ? localProd.stock : 10) - item.qty);
+          }
+        });
+        
+        state.config = dbConfig;
+        await syncConfigToSupabase();
+      } else {
+        console.warn("Failed to retrieve db config. Falling back to local stock decrement.");
+        decrementLocalStock();
+        saveConfig();
+      }
+    } catch (err) {
+      console.warn("Error syncing checkout stocks with database: ", err);
+      decrementLocalStock();
+      saveConfig();
     }
-  });
-  
-  // Save settings (only saves locally for active customer's simulation)
-  saveConfig();
+  } else {
+    decrementLocalStock();
+    saveConfig();
+  }
   
   // Clear cart
   state.cart = [];
@@ -1009,9 +1078,19 @@ function finalizeCheckout() {
   document.getElementById('checkout-form').reset();
   checkoutData = null;
   
-  // Close modales and refresh showcase
+  // Close modals and refresh showcase
   closeReceiptPreview();
   renderStorefront();
+}
+
+function decrementLocalStock() {
+  state.cart.forEach(item => {
+    const prod = state.config.products.find(p => p.id === item.productId);
+    if (prod) {
+      const currentStock = prod.stock !== undefined ? prod.stock : 10;
+      prod.stock = Math.max(0, currentStock - item.qty);
+    }
+  });
 }
 
 // Manual Close Receipt Button binding
@@ -1168,4 +1247,47 @@ function loadLocalStorageConfig() {
 // -------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
   loadInitialConfig();
+  
+  // Automated test hook
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('test') === 'true') {
+    setTimeout(runAutomatedTest, 2500);
+  }
 });
+
+async function runAutomatedTest() {
+  console.log("Starting automated PDF download test...");
+  showToast("Running automated test...", "fa-arrows-spin");
+  
+  // 1. Add first product to cart
+  const products = state.config.products;
+  if (products.length === 0) {
+    console.error("No products to test!");
+    return;
+  }
+  const testProdId = products[0].id;
+  addToCart(testProdId);
+  
+  // 2. Open checkout modal
+  await new Promise(r => setTimeout(r, 1000));
+  openCheckout();
+  
+  // 3. Fill in checkout form
+  document.getElementById('customer-name').value = "Test User";
+  document.getElementById('customer-phone').value = "+1 (555) 019-2834";
+  document.getElementById('customer-address').value = "123 Test Street, Test City, TC 12345";
+  
+  // 4. Submit checkout form
+  await new Promise(r => setTimeout(r, 1000));
+  document.getElementById('checkout-form').dispatchEvent(new Event('submit', { cancelable: true }));
+  
+  // 5. Trigger PDF download
+  await new Promise(r => setTimeout(r, 1500));
+  const downloadBtn = document.getElementById('btn-download-pdf');
+  if (downloadBtn) {
+    downloadBtn.click();
+    console.log("Triggered PDF download click.");
+  } else {
+    console.error("Download button not found!");
+  }
+}
