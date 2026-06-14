@@ -183,6 +183,18 @@ function populateAdminForms() {
   renderAdminSlidesList();
   renderAdminFeaturesList();
   renderAdminProductsList();
+
+  // Supabase Sync Inputs
+  document.getElementById('input-supabase-url').value = supabaseUrl;
+  document.getElementById('input-supabase-key').value = supabaseKey;
+  
+  if (supabaseClient) {
+    updateSupabaseStatus("connected", "Connected & synchronized");
+  } else if (supabaseUrl && supabaseKey) {
+    updateSupabaseStatus("error", "Verify credentials and connect");
+  } else {
+    updateSupabaseStatus("disconnected", "Database not connected");
+  }
 }
 
 // Setup base64 readers
@@ -714,4 +726,84 @@ document.getElementById('btn-reset-defaults').addEventListener('click', () => {
     
     showToast("Template reset to factory presets.", "fa-trash-can");
   }
+});
+
+// -------------------------------------------------------------
+// SUPABASE SYNC FORM HANDLERS
+// -------------------------------------------------------------
+
+// Save & Connect to Supabase
+document.getElementById('btn-save-supabase').addEventListener('click', async () => {
+  const url = document.getElementById('input-supabase-url').value.trim();
+  const key = document.getElementById('input-supabase-key').value.trim();
+  
+  if (!url || !key) {
+    showToast("Both URL and Key are required to connect!", "fa-circle-exclamation");
+    return;
+  }
+  
+  supabaseUrl = url;
+  supabaseKey = key;
+  localStorage.setItem('aura_supabase_url', url);
+  localStorage.setItem('aura_supabase_key', key);
+  
+  initSupabaseClient();
+  
+  if (supabaseClient) {
+    try {
+      updateSupabaseStatus("syncing", "Connecting to database...");
+      // Test read configuration
+      const { data, error } = await supabaseClient
+        .from('storefront_settings')
+        .select('value')
+        .eq('id', 'aura_config')
+        .maybeSingle();
+        
+      if (error) {
+        showToast("Supabase Error: " + error.message, "fa-circle-exclamation");
+        updateSupabaseStatus("error", "Table settings error: " + error.message);
+      } else {
+        // Success! Perform initial sync of current state config
+        updateSupabaseStatus("syncing", "Uploading current layout config...");
+        const { error: writeError } = await supabaseClient
+          .from('storefront_settings')
+          .upsert({ id: 'aura_config', value: state.config, updated_at: new Date() });
+          
+        if (writeError) {
+          showToast("Connected, but write failed: " + writeError.message, "fa-circle-exclamation");
+          updateSupabaseStatus("error", "Write failed: " + writeError.message);
+        } else {
+          showToast("Successfully connected to Supabase and synced storefront!", "fa-circle-check");
+          updateSupabaseStatus("connected", "Connected & synchronized");
+        }
+      }
+    } catch (err) {
+      showToast("Connection failed: " + err.message, "fa-circle-exclamation");
+      updateSupabaseStatus("error", "Connection exception: " + err.message);
+    }
+  } else {
+    showToast("Failed to initialize Supabase client.", "fa-circle-exclamation");
+    updateSupabaseStatus("error", "Initialization failed");
+  }
+});
+
+// Export credentials JSON for static deployment
+document.getElementById('btn-export-supabase-config').addEventListener('click', () => {
+  const url = document.getElementById('input-supabase-url').value.trim();
+  const key = document.getElementById('input-supabase-key').value.trim();
+  
+  if (!url || !key) {
+    showToast("Please enter Supabase URL and Key first!", "fa-circle-exclamation");
+    return;
+  }
+  
+  const credentials = { supabaseUrl: url, supabaseKey: key };
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(credentials, null, 2));
+  const dlAnchor = document.createElement('a');
+  dlAnchor.setAttribute("href",     dataStr);
+  dlAnchor.setAttribute("download", "supabase_config.json");
+  document.body.appendChild(dlAnchor);
+  dlAnchor.click();
+  dlAnchor.remove();
+  showToast("Credentials file downloaded. Place it in your project repository root!");
 });

@@ -280,6 +280,65 @@ let checkoutData = null;
 // -------------------------------------------------------------
 function saveConfig() {
   localStorage.setItem('aura_store_config', JSON.stringify(state.config));
+  if (supabaseClient) {
+    syncConfigToSupabase();
+  }
+}
+
+async function syncConfigToSupabase() {
+  try {
+    updateSupabaseStatus("syncing", "Syncing configuration with cloud...");
+    const { error } = await supabaseClient
+      .from('storefront_settings')
+      .upsert({ id: 'aura_config', value: state.config, updated_at: new Date() });
+      
+    if (error) {
+      console.error("Supabase sync error:", error);
+      updateSupabaseStatus("error", "Sync failed: " + error.message);
+    } else {
+      console.log("Successfully synced configuration to Supabase.");
+      updateSupabaseStatus("connected", "Connected & synchronized");
+    }
+  } catch (err) {
+    console.error("Supabase sync exception:", err);
+    updateSupabaseStatus("error", "Connection failed: " + err.message);
+  }
+}
+
+function updateSupabaseStatus(status, text) {
+  const statusDiv = document.getElementById('supabase-sync-status');
+  const iconEl = document.getElementById('supabase-status-icon');
+  const textEl = document.getElementById('supabase-status-text');
+  if (!statusDiv || !iconEl || !textEl) return;
+  
+  statusDiv.style.backgroundColor = '';
+  statusDiv.style.color = '';
+  statusDiv.style.borderLeft = '';
+  iconEl.className = 'fa-solid';
+  
+  if (status === 'connected') {
+    statusDiv.style.backgroundColor = '#ecfdf5';
+    statusDiv.style.color = '#065f46';
+    statusDiv.style.borderLeft = '4px solid #34d399';
+    iconEl.classList.add('fa-circle-check');
+  } else if (status === 'syncing') {
+    statusDiv.style.backgroundColor = '#fef3c7';
+    statusDiv.style.color = '#92400e';
+    statusDiv.style.borderLeft = '4px solid #fbbf24';
+    iconEl.classList.add('fa-arrows-spin');
+    iconEl.classList.add('fa-spin'); // spin animation for syncing!
+  } else if (status === 'error') {
+    statusDiv.style.backgroundColor = '#fee2e2';
+    statusDiv.style.color = '#991b1b';
+    statusDiv.style.borderLeft = '4px solid #f87171';
+    iconEl.classList.add('fa-circle-xmark');
+  } else {
+    statusDiv.style.backgroundColor = '#f3f4f6';
+    statusDiv.style.color = '#4b5563';
+    statusDiv.style.borderLeft = '4px solid #9ca3af';
+    iconEl.classList.add('fa-circle-question');
+  }
+  textEl.textContent = text;
 }
 
 function saveCart() {
@@ -979,25 +1038,108 @@ function validateConfig(cfg) {
          cfg.footer);
 }
 
-async function loadInitialConfig() {
+// Supabase Cloud Sync Configuration variables
+let supabaseUrl = localStorage.getItem('aura_supabase_url') || '';
+let supabaseKey = localStorage.getItem('aura_supabase_key') || '';
+let supabaseClient = null;
+
+async function loadSupabaseCredentials() {
   try {
-    const response = await fetch('config.json');
+    const response = await fetch('supabase_config.json');
     if (response.ok) {
-      const remoteConfig = await response.json();
-      if (validateConfig(remoteConfig)) {
-        state.config = remoteConfig;
-        console.log("Successfully loaded configurations from remote config.json file.");
-      } else {
-        console.warn("Remote config.json was invalid. Defaulting to local storage settings.");
-        loadLocalStorageConfig();
+      const data = await response.json();
+      if (data.supabaseUrl && data.supabaseKey) {
+        supabaseUrl = data.supabaseUrl;
+        supabaseKey = data.supabaseKey;
+        localStorage.setItem('aura_supabase_url', supabaseUrl);
+        localStorage.setItem('aura_supabase_key', supabaseKey);
+        console.log("Supabase credentials loaded from remote supabase_config.json.");
       }
-    } else {
-      console.log("config.json not found on server. Defaulting to local storage settings.");
-      loadLocalStorageConfig();
     }
   } catch (err) {
-    console.warn("Failed to fetch config.json. Defaulting to local storage settings.", err);
-    loadLocalStorageConfig();
+    console.log("supabase_config.json not found on server or failed to fetch. Falling back to local values.");
+  }
+}
+
+function initSupabaseClient() {
+  if (supabaseUrl && supabaseKey && typeof supabase !== 'undefined') {
+    try {
+      supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+      console.log("Supabase client initialized successfully.");
+    } catch (err) {
+      console.error("Failed to initialize Supabase client:", err);
+    }
+  }
+}
+
+async function loadInitialConfig() {
+  // 1. Try to fetch credentials from server-side config file
+  await loadSupabaseCredentials();
+  
+  // 2. Initialize Supabase Client
+  initSupabaseClient();
+  
+  let loadedFromSupabase = false;
+  
+  // 3. Query settings from database if configured
+  if (supabaseClient) {
+    try {
+      console.log("Fetching storefront configuration from Supabase storefront_settings...");
+      updateSupabaseStatus("syncing", "Connecting to Supabase...");
+      const { data, error } = await supabaseClient
+        .from('storefront_settings')
+        .select('value')
+        .eq('id', 'aura_config')
+        .maybeSingle();
+        
+      if (!error && data && data.value) {
+        const remoteConfig = data.value;
+        if (validateConfig(remoteConfig)) {
+          state.config = remoteConfig;
+          loadedFromSupabase = true;
+          console.log("Successfully loaded configurations from Supabase storefront_settings.");
+          updateSupabaseStatus("connected", "Connected & synchronized");
+        } else {
+          console.warn("Retrieved Supabase config was invalid.");
+          updateSupabaseStatus("error", "Database config format invalid");
+        }
+      } else if (error) {
+        console.warn("Supabase query error: ", error.message);
+        updateSupabaseStatus("error", "Database error: " + error.message);
+      } else {
+        console.log("No configuration record found in Supabase. Falling back to files.");
+        updateSupabaseStatus("connected", "Connected (No data in DB)");
+      }
+    } catch (err) {
+      console.warn("Supabase connection exception: ", err);
+      updateSupabaseStatus("error", "Connection exception: " + err.message);
+    }
+  } else {
+    updateSupabaseStatus("disconnected", "Database not connected");
+  }
+  
+  // 4. Fallback to config.json
+  if (!loadedFromSupabase) {
+    try {
+      const response = await fetch('config.json');
+      if (response.ok) {
+        const remoteConfig = await response.json();
+        if (validateConfig(remoteConfig)) {
+          state.config = remoteConfig;
+          console.log("Successfully loaded configurations from remote config.json file.");
+          loadedFromSupabase = true;
+        } else {
+          console.warn("Remote config.json was invalid. Defaulting to local storage settings.");
+          loadLocalStorageConfig();
+        }
+      } else {
+        console.log("config.json not found on server. Defaulting to local storage settings.");
+        loadLocalStorageConfig();
+      }
+    } catch (err) {
+      console.warn("Failed to fetch config.json. Defaulting to local storage settings.", err);
+      loadLocalStorageConfig();
+    }
   }
   
   // Initialize user login states and render site
